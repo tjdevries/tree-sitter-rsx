@@ -1,0 +1,84 @@
+=============
+Does something
+=============
+
+<div>
+    <div>
+    </div>
+</div>
+
+----
+
+(fragment
+ (element
+  (start_tag
+   (tag_name))
+  (element
+   (start_tag
+    (tag_name))
+   (end_tag
+    (tag_name)))
+  (end_tag
+   (tag_name))))
+
+=============
+RAW strings
+=============
+
+<div class="hello-world">
+    <div>
+    </div>
+</div>
+
+----
+
+(fragment
+ (element
+  (start_tag
+   (tag_name)
+   (attribute
+    (attribute_name)
+    (quoted_attribute_value
+     (attribute_value))))
+  (element
+   (start_tag
+    (tag_name))
+   (end_tag
+    (tag_name)))
+  (end_tag
+   (tag_name))))
+
+
+=============
+Rust strings
+=============
+
+<div class={ "hello-world" }>
+    <div>
+        {
+            let x = 10;
+
+            for history.current().iter().rev().take(20).map(|message| {
+                render_message(message)
+            })
+        }
+    </div>
+</div>
+
+----
+
+(fragment
+ (element
+  (start_tag
+   (tag_name)
+   (attribute
+    (attribute_name)
+    (rust_attribute)))
+  (element
+   (start_tag
+    (tag_name))
+   (rust_text)
+   (end_tag
+    (tag_name)))
+  (end_tag
+   (tag_name))))
