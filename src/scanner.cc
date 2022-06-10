@@ -20,7 +20,7 @@ enum TokenType {
   SELF_CLOSING_TAG_DELIMITER,
   IMPLICIT_END_TAG,
   RAW_TEXT,
-  COMMENT
+  BLOCK_COMMENT
 };
 
 struct Scanner {
@@ -88,33 +88,6 @@ struct Scanner {
       lexer->advance(lexer, false);
     }
     return tag_name;
-  }
-
-  bool scan_comment(TSLexer *lexer) {
-    if (lexer->lookahead != '-') return false;
-    lexer->advance(lexer, false);
-    if (lexer->lookahead != '-') return false;
-    lexer->advance(lexer, false);
-
-    unsigned dashes = 0;
-    while (lexer->lookahead) {
-      switch (lexer->lookahead) {
-        case '-':
-          ++dashes;
-          break;
-        case '>':
-          if (dashes >= 2) {
-            lexer->result_symbol = COMMENT;
-            lexer->advance(lexer, false);
-            lexer->mark_end(lexer);
-            return true;
-          }
-        default:
-          dashes = 0;
-      }
-      lexer->advance(lexer, false);
-    }
-    return false;
   }
 
   bool scan_raw_text(TSLexer *lexer) {
@@ -228,6 +201,43 @@ struct Scanner {
     return false;
   }
 
+  bool scan_block_comment(TSLexer *lexer) {
+    bool after_star = false;
+    unsigned nesting_depth = 1;
+    for (;;) {
+      switch (lexer->lookahead) {
+        case '\0':
+          return false;
+        case '*':
+          lexer->advance(lexer, false);
+          after_star = true;
+          break;
+        case '/':
+          if (after_star) {
+            lexer->advance(lexer, false);
+            after_star = false;
+            nesting_depth--;
+            if (nesting_depth == 0) {
+              lexer->result_symbol = BLOCK_COMMENT;
+              return true;
+            }
+          } else {
+            lexer->advance(lexer, false);
+            after_star = false;
+            if (lexer->lookahead == '*') {
+              nesting_depth++;
+              lexer->advance(lexer, false);
+            }
+          }
+          break;
+        default:
+          lexer->advance(lexer, false);
+          after_star = false;
+          break;
+      }
+    }
+  }
+
   bool scan(TSLexer *lexer, const bool *valid_symbols) {
     while (iswspace(lexer->lookahead)) {
       lexer->advance(lexer, true);
@@ -241,11 +251,6 @@ struct Scanner {
       case '<':
         lexer->mark_end(lexer);
         lexer->advance(lexer, false);
-
-        if (lexer->lookahead == '!') {
-          lexer->advance(lexer, false);
-          return scan_comment(lexer);
-        }
 
         if (valid_symbols[IMPLICIT_END_TAG]) {
           return scan_implicit_end_tag(lexer);
@@ -262,6 +267,13 @@ struct Scanner {
         if (valid_symbols[SELF_CLOSING_TAG_DELIMITER]) {
           return scan_self_closing_tag_delimiter(lexer);
         }
+
+        lexer->advance(lexer, false);
+        if (lexer->lookahead == '*') {
+          lexer->advance(lexer, false);
+          return scan_block_comment(lexer);
+        }
+
         break;
 
       default:

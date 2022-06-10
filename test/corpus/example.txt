@@ -82,3 +82,95 @@ Rust strings
     (tag_name)))
   (end_tag
    (tag_name))))
+
+
+=============
+Line comment
+=============
+
+<div class={ "hello-world" }>
+    <div>
+        // <p>{ "Testing line comment" }</p>
+    </div>
+</div>
+
+----
+
+(fragment
+  (element
+    (start_tag
+      (tag_name)
+      (attribute
+        (attribute_name)
+        (rust_attribute)))
+    (element
+      (start_tag
+        (tag_name))
+      (line_comment)
+      (end_tag
+        (tag_name)))
+    (end_tag
+      (tag_name))))
+
+=============
+Block comment
+=============
+
+<div class={ "hello-world" }>
+    <div>
+        /* <p>{ "Testing block comment" }</p> */
+    </div>
+</div>
+
+----
+
+(fragment
+  (element
+    (start_tag
+      (tag_name)
+      (attribute
+        (attribute_name)
+        (rust_attribute)))
+    (element
+      (start_tag
+        (tag_name))
+      (block_comment)
+      (end_tag
+        (tag_name)))
+    (end_tag
+      (tag_name))))
+
+=============
+Nested block comment
+=============
+
+<div class={ "hello-world" }>
+    <div>
+        /*
+         * <input
+         *   type="text"
+         *   /* name="input" */
+         *   placeholder="input"
+         * >
+         * </input>
+         */
+    </div>
+</div>
+
+----
+
+(fragment
+  (element
+    (start_tag
+      (tag_name)
+      (attribute
+        (attribute_name)
+        (rust_attribute)))
+    (element
+      (start_tag
+        (tag_name))
+      (block_comment)
+      (end_tag
+        (tag_name)))
+    (end_tag
+      (tag_name))))

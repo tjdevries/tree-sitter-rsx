@@ -1,6 +1,6 @@
 module.exports = grammar({
     name: "rsx",
-    extras: ($) => [$.comment, /\s+/],
+    extras: $ => [/\s/, $.line_comment, $.block_comment],
 
     externals: ($) => [
         $._start_tag_name,
@@ -11,7 +11,7 @@ module.exports = grammar({
         "/>",
         $._implicit_end_tag,
         $.raw_text,
-        $.comment,
+        $.block_comment,
     ],
 
     rules: {
@@ -25,6 +25,10 @@ module.exports = grammar({
                 $.style_element,
                 $.erroneous_end_tag
             ),
+
+        line_comment: ($) => token(seq(
+            '//', /.*/
+        )),
 
         element: ($) =>
             choice(
